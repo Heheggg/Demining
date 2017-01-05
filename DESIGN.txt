@@ -1,0 +1,39 @@
+Team Members: Sam Xu, Vandana Agarwala
+
+
+Project Statement:
+We will be implementing an multi-player version of the Minesweeper game
+
+
+How It Will Be Used:
+-The game server will allow multiple two-player games to exist
+-The game server will automatically pair any clients trying to connect to a game
+-The game will use the standard rules of the single-player Minesweeper video-game
+-Both players will share the same minesweeper board
+-The two players will each go turn by turn, each player have to demine a block after each other with a time limit. Whoever first trigger a mine will loose the game. 
+-Both players are allowed to independently mark their own boards with flags at any time
+-Optional Features: In-game chat, diffculty selection, single-player variant
+
+
+Technical Design:
+*Memory allocation for the game
+*Networking between the server + client computers to play the game
+*File reading/writing and shared memory to keep track of individual boards and past game records
+*Semaphores and shared memory to share the gameboard.
+*Signals to determine game states
+*Inputs parsing to determine player commands
+
+*Arrays for board storage
+*Radomization to shuffle the boards and randomly distribute the mines
+*Algorithm to ensure all blocks without nearby mine will be marked off after an selection with minimal computational effort. 
+
+
+Predicted Timeline:
+Server Communication Implementation
+       -Completion on day 1~2
+Client Game Structure + Player Interaction
+       -Completion on day 7~8
+Graphics + Multiple Game Instance
+       -Completion on day 10~11	 	 
+Optimization + Optional Features
+       -Last two to three days
