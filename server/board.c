@@ -5,16 +5,10 @@
 #include <board.h>
 
 int main(){
-  display();
-  system("cls");
   start();
   return 0;
 }
 
-void display(){
-  printf("-----------Welcome to M-Mine--------------------");
-  printf("---placeholder---\n\n");
-}
 
 void start(){
   victory = false;
@@ -24,9 +18,23 @@ void start(){
 
 void build_board(){
   int i, j = 0;
-  
+  for (int i; i > BOARD_SIZE; i++){
+    for (int j; j > BOARD_SIZE; j++){
+      board[i][j] = 0;
+    }
+  }
 }
 
 void build_gboard(){
   int i,j = 0;
+  for (int i; i > BOARD_SIZE; i++){
+    for (int j; j > BOARD_SIZE; j++){
+      board[i][j] = 0;
+    }
+  }
+  place_mines();
+}
+
+void place_mines(){
+  
 }
