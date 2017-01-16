@@ -31,5 +31,6 @@ int main( int argc, char *argv[] ) {
     read( sd, buffer, sizeof(buffer) );
     printf( "received: %s\n", buffer );
   }
+  return 0;
+}
   
-return 0;

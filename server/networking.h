@@ -11,3 +11,6 @@ int server_connect(int sd);
 int client_connect( char *host );
 
 #endif
+
+#define DEFAULTIP 127.0.0.1;
+#define DEFAULTPORT 1216;
