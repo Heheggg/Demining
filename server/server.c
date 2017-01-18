@@ -65,12 +65,3 @@ void sub_server( int sd ) {
   
 }
 
-
-void process( char * s ) {
-
-  while ( *s ) {
-    *s = (*s - 'a' + 13) % 26 + 'a';
-    s++;
-  }
-}
-
