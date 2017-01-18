@@ -10,6 +10,8 @@ void process( char * s );
 void sub_server( int sd );
 
 int main(int argc, char *argv[]) {
+  int counter = 0;
+  
   //Input buffer
   setlinebuf(stdout);
   setlinebuf(stderr);
