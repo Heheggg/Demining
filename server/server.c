@@ -13,6 +13,7 @@
 
 int main(int argc, char *argv[]) {
   int players = 2;
+  int i,n;
   
   //Input buffer
   setlinebuf(stdout);
@@ -43,12 +44,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "The socket could not be created.\n");
   case 2:
     fprintf(stderr, "Unable to bind.\n");
-  case 3:
-    fprintf(stderr, "Unable to listen on port %u.\n", port);
     exit(4);
     //No error returned
   default:
-    printf("Server listening on port %u.\n", port);
     printf("Waiting for players to connect.\n");
     break;
   }
@@ -70,11 +68,12 @@ int main(int argc, char *argv[]) {
     }
 
     initialize(playerData,field);
+
     
     if(server_connect(&server_Sock, client_Sock, client_Addr, playerData)){
       fprintf(stderr, "Select failed.\n");
     }
-
+    printf("new fork test\n");
     int pid = fork();
     if (pid < 0){
       fprintf(stderr,"ERROR on Fork \n");
@@ -83,20 +82,29 @@ int main(int argc, char *argv[]) {
     if(pid == 0){
       close(server_Sock);
 
+      if(!play(client_Sock, playerData, field)){
+        i = 0;
+        for(n = 1; n < players; n++){
+	  if(playerData[n].score > playerData[i].score){
+	    i = n;
+	  }
+        }
+        printf("%s won.\n", playerData[i].name);
+      }
       
       free(client_Addr);
       free(playerData);
       free(client_Sock);
-      
+
+      printf("exiting \n");
       exit(0);
     }else{
-      int i;
       for(i = 0; i < players; i++){
 	close(client_Sock[i]);
       }
     }
     
-  
+    
     return 0;
   
   }

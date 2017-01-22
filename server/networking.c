@@ -29,11 +29,6 @@ int server_setup(int *server_Sock, unsigned short port, struct sockaddr_in *serv
     return 2;
   }
 
-  //Listen
-  if(listen(*server_Sock,players)){
-    return 3;
-  }
-
   return 0;
   
 }
@@ -50,6 +45,13 @@ int server_connect(int *server_Sock, int *client_Sock, struct sockaddr_in *clien
 
   unsigned char p = 0;
   unsigned char n = 0;
+
+  //Listen
+  if(listen(*server_Sock,players)){
+    return 3;
+  }
+
+  
   while(p < players){
     //Build playerse
     FD_ZERO(&set);
@@ -231,3 +233,200 @@ int server_connect(int *server_Sock, int *client_Sock, struct sockaddr_in *clien
     
 }
 
+int play(int *client_Sock, struct data *playerData, unsigned char field[16][16]){
+  unsigned char players = 2;
+  
+  unsigned char mines = 40;
+  unsigned char turn = rand() % players;
+
+  unsigned char i, n, t, e, swept;
+  short int len;
+  char buffer[191];
+  unsigned char mBuffer[255];
+  fd_set set;
+
+  buffer[0] = 2;
+  buffer[1] = 'v';
+  buffer[2] = turn;
+
+  for(i = 0; i < players; i++){
+    send(client_Sock[i],buffer,3,0);
+  }
+  printf("%s turn.\n", playerData[turn].name);
+
+  while(mines){
+    FD_ZERO(&set);
+    for(i = 0; i<players; i++){
+      FD_SET(client_Sock[i], &set);
+    }
+
+    select(FD_SETSIZE, &set, NULL, NULL, NULL);
+
+    //check each socket
+    for(i = 0; i < players; i++){
+      if(!(FD_ISSET(client_Sock[i], &set))){
+	continue;
+      }
+      //Receive if we can
+      if(playerData[i].toReceive){
+	len = recv(client_Sock[i],
+		   playerData[i].buffer +
+		   (playerData[i].len - playerData[i].toReceive) * sizeof(char),
+		   playerData[i].toReceive, 0);
+
+	if(len > 0){
+	  playerData[i].toReceive -= len;
+	  //Receive more if we didn't get the whole thing
+	  if(playerData[i].toReceive){
+	    continue;
+	  }
+	}
+      }
+      //Discard if we have to
+      else if(playerData[i].toDiscard){
+	len = recv(client_Sock[i], buffer, playerData[i].toDiscard, 0);
+	if(len > 0){
+	  playerData[i].toDiscard -= len;
+	  continue;
+	}
+      }
+      //Get the length of the new message
+      else {
+	len = recv(client_Sock[i], buffer, 1, 0);
+	//Get the length if the player didn't leave
+	if(len > 0){
+	  //Adjust the values
+	  if((unsigned char) buffer[0] > 64){
+	    playerData[i].len = 64;
+	    playerData[i].toReceive = 64;
+	    playerData[i].toDiscard = (unsigned char) buffer[0] - 64;
+	  }
+	  else {
+	    playerData[i].len = (unsigned char) buffer[0];
+	    playerData[i].toReceive = (unsigned char) buffer[0];
+	  }
+	  continue;
+	}
+      }
+      //Player left
+      if(len <= 0){
+	printf("%s left.\n", playerData[i].name);
+	//Close the socket
+	shutdown(client_Sock[i], 2);
+#ifdef WIN32
+	closesocket(client_Sock[i]);
+#else
+	close(client_Sock[i]);
+#endif
+	//Tell the rest of the players
+	buffer[0] = 2;
+	buffer[1] = 'l';
+	buffer[2] = i;
+	for(n = 0; n < players; n++){
+	  if(n != i){
+	    send(client_Sock[n], buffer, 3, 0);
+	  }
+	}
+
+	//End the game
+	return 1;
+      }
+
+      //Parse
+      if(playerData[i].buffer[0] == 't'){
+	//Player's chatting, retransmit
+	//Make tBlabla into ltiblabla\0
+	//Where i = player id and l is the length
+	for(n = 1; n < playerData[i].len; n++){
+	  buffer[n + 2] = playerData[i].buffer[n];
+	}
+	buffer[0] = 1 + playerData[i].len;
+	buffer[1] = 't';
+	buffer[2] = i;
+	for(n = 0; n < players; n++){
+	  send(client_Sock[n], buffer, playerData[i].len + 2, 0);
+	}
+	//Add a zero before printing
+	playerData[i].buffer[playerData[i].len] = 0;
+	printf("%s: %s\n", playerData[i].name,
+	       playerData[i].buffer + sizeof(char));
+      }
+      //Player swept
+      else if(playerData[i].buffer[0] == 's' && i == turn){
+	swept = demine((playerData[i].buffer[1] & 240) >> 4,
+		      playerData[i].buffer[1] & 15, mBuffer, field);
+	printf("%s swept %u, %u. Value: %u. %u cell(s).\n", 
+	       playerData[i].name, (playerData[i].buffer[1] & 240) >> 4,
+	       playerData[i].buffer[1] & 15,
+	       field[(playerData[i].buffer[1]&240)>>4][playerData[i].buffer[1]&15],
+	       swept);
+	//If it was valid, tell the players
+	if(swept){
+	  sendReveal(swept, buffer, mBuffer, client_Sock, playerData,
+		     players, field);
+	  //Play again if it was a mine
+	  if(field[(mBuffer[0] & 240) >> 4][mBuffer[0] & 15] != 9){
+	    turn++;
+	    turn %= players;
+	  }
+	  else{
+	    playerData[i].score++;
+	    mines--;
+	    //Check if he won
+	    for(t = 0; t < players; t++){
+	      n = 0;
+	      for(e = 0; e < players; e++){
+		if(playerData[e].score + mines >= playerData[t].score){
+		  n++;
+		}
+	      }
+	      //End the game if he did
+	      if(n == 1){
+		//Tell other players and stop
+		buffer[0] = 1;
+		buffer[1] = 'w';
+		for(e = 0; e < players; e++){
+		  send(client_Sock[e], buffer, 2, 0);
+		}
+		return 0;
+	      }
+	    }
+	  }
+	  //Tell players who's next
+	  buffer[0] = 2;
+	  buffer[1] = 'v';
+	  buffer[2] = turn;
+	  for(n = 0; n < players; n++){
+	    send(client_Sock[n], buffer, 3, 0);
+	  }
+	  printf("%s's turn.\n", playerData[turn].name);
+	}
+      }
+    }
+  }
+
+  return 0;
+}
+
+void sendReveal(unsigned char swept, char *buffer,
+		unsigned char *mBuffer, int *client_Sock, struct data *playerData,
+		unsigned char players, unsigned char field[16][16]){
+
+  unsigned char i, n;
+
+  //Split and send
+  buffer[1] = 'r';
+  for(i = 0; i < swept;){
+    //31 coordinates at a time
+    buffer[0] = (swept - i) > 31? 63 : ((swept - i) * 2 + 1);
+
+    for(n = 2; n < buffer[0]; n++){
+      buffer[n++] = mBuffer[i];
+      buffer[n] = field[(mBuffer[i] & 240) >> 4][mBuffer[i] & 15];
+      i++;
+    }
+    for(n = 0; n < players; n++){
+      send(client_Sock[n], buffer, buffer[0] + 1, 0);
+    }
+  }
+}

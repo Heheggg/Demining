@@ -5,10 +5,12 @@ struct data {
     unsigned char namelen;
     unsigned char toReceive;
     unsigned char toDiscard;
-    unsigned char len;
-    char name[17];
-    char buffer[65];
+  unsigned char len;
+  char name[17];
+  char buffer[65];
 };
 
 
 void initialize(struct data *playerData, unsigned char field[16][16]);
+
+int demine(unsigned char y, unsigned char x, unsigned char *mBuffer, unsigned char field[16][16]);
