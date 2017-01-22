@@ -6,6 +6,9 @@ main.o: main.c mine_sweeper.h
 	
 mine_sweeper.o: mine_sweeper.c mine_sweeper.h
 	gcc -Wall -g -c -o mine_sweeper.o mine_sweeper.c
+
+run:
+	./mine_sweeper.out
 	
 clean:
 	rm *.out *.o
