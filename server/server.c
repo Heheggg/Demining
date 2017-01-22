@@ -8,8 +8,8 @@
 #include <sys/types.h>
 #include <sys/unistd.h>
 
-#include "networking.h"
 #include "game.h"
+#include "networking.h"
 
 int main(int argc, char *argv[]) {
   int players = 2;
@@ -61,7 +61,6 @@ int main(int argc, char *argv[]) {
   unsigned char field[16][16];
   
   while(1){
-    
     if(!(client_Addr = (struct sockaddr_in *) malloc(players * sizeof(struct sockaddr_in))) ||
        !(playerData = (struct data *) malloc(players * sizeof(struct data))) ||
        !(client_Sock = (int *) malloc(players * sizeof(int)))){
@@ -70,6 +69,7 @@ int main(int argc, char *argv[]) {
       exit(5);
     }
 
+    initialize(playerData,field);
     
     if(server_connect(&server_Sock, client_Sock, client_Addr, playerData)){
       fprintf(stderr, "Select failed.\n");

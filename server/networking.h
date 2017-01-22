@@ -6,18 +6,6 @@
 #define DEFAULTPORT 1216
 
 
-struct data {
-    //Stat: byte0 = connected, byte1 = named
-    unsigned char stats;
-    unsigned short score;
-    unsigned char namelen;
-    unsigned char toReceive;
-    unsigned char toDiscard;
-    unsigned char len;
-    char name[17];
-    char buffer[65];
-};
-
 void error_check( int i, char *s );
 
 int server_setup(int *server_Sock, unsigned short port, struct sockaddr_in *server_Addr);
