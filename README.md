@@ -4,7 +4,8 @@ Require: sudo apt-get install libncurses5-dev
 
 Compiling Guide:
 
-Server/Client folder: make - compile all the files	make clean - remove all the compiled
+Server/Client folder: make - compile all the files	
+make clean - remove all the compiled
 
 
 Running the game:
