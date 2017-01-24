@@ -1,11 +1,14 @@
 # Demining
 
+Require: sudo apt-get install libncurses5-dev 
+
+
 Compiling Guide:
 
-Server/Client folder: 
+	Server/Client folder:
 		make - compile all the files
 
-	      	make clean - remove all the compiled
+	      	make clean - remove all the compiled files
 
 Running the game:
 
