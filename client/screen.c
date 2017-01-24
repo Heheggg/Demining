@@ -115,7 +115,6 @@ int keyboardHandler(WINDOW *middle, WINDOW *textBox,
     unsigned char id, unsigned char turn, unsigned char field[16][16],
 		    char *chatBuffer){
   int c;
-  unsigned char i,n,v;
   c = getch();
 
   switch(c){
@@ -384,8 +383,6 @@ void updateScore(WINDOW *left, unsigned char t, struct data *pData){
 
 void startCursor(WINDOW *middle, unsigned char *y, unsigned char *x,
      unsigned char field[16][16]){
-
-    unsigned char i, n, v;
 
     //Set the appropriate color
     wcolor_set(middle, 18, NULL);

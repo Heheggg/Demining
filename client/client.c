@@ -25,26 +25,12 @@ int main(int argc, char *argv[]){
     signal(SIGINT, cleanup);
     signal(SIGTERM, cleanup);
     signal(SIGABRT, cleanup);
-#ifndef WIN32
-    signal(SIGSTOP, cleanup);
-    signal(SIGTSTP, cleanup);
-#endif
 
     unsigned short port = DEFAULTPORT;
     //p for current players
     unsigned char i, n, players, id, mines, p;
     int sock;
     struct data *pData = NULL;
-
-
-#ifdef WIN32
-    WSADATA wsaData;
-
-    if(WSAStartup(MAKEWORD(2, 0), &wsaData)){
-        fprintf(stderr, "WSAStartup() failed.\n");
-        exit(10);
-    }
-#endif
 
     //Validate port
     if(argc == 4 && !(port = strtoul(argv[3], NULL, 0))){
@@ -146,12 +132,7 @@ int main(int argc, char *argv[]){
              mines, pData, field);
 
     shutdown(sock, 2);
-#ifdef WIN32
-    closesocket(sock);
-#else
     close(sock);
-#endif
-
     if(!p){
         showWinner(bottom, players, pData);
     }
