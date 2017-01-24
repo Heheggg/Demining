@@ -14,7 +14,7 @@
 
 int main(int argc, char *argv[]){
     //Check arguments
-    if(argc < 2 || argc > 4){
+    if(argc !=  4){
         fprintf(stderr, "Usage: %s NAME [SERVERIP] [PORT]\n", argv[0]);
         fprintf(stderr, "By default SERVERIP=%s and PORT=%u.\n",
             DEFAULTIP, DEFAULTPORT);
