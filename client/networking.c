@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <curses.h>
 
@@ -153,37 +152,52 @@ int game(WINDOW *left, WINDOW *bottom, WINDOW *textBox, WINDOW *middle,
     while(mines){
         //Build the set
         FD_ZERO(&set);
+#ifndef WIN32
+        FD_SET(fileno(stdin), &set);
+#endif
         FD_SET(sock, &set);
-	if(select(FD_SETSIZE, &set, NULL, NULL, NULL) < 0){
+
+        //Wait for something to happen
+#ifdef WIN32
+        if(select(FD_SETSIZE, &set, NULL, NULL, &timeVal) < 0){
+#else
+        if(select(FD_SETSIZE, &set, NULL, NULL, NULL) < 0){
+#endif
             return 1;
         }
 
-	//Send the message if the handler says it's OK
-	switch(keyboardHandler(middle, textBox, &chatLen, &isChatting,
-			       &y, &x, id, turn, field, chatBuffer)){
+        //Read the keyboard first
+#ifndef WIN32
+        if(FD_ISSET(fileno(stdin), &set)){
+#endif
+            //Send the message if the handler says it's OK
+            switch(keyboardHandler(middle, textBox, &chatLen, &isChatting,
+                &y, &x, id, turn, field, chatBuffer)){
 
-	  //Chat
-	case 1:
-	  //Set the size of the message and send it
-	  chatBuffer[0] = chatLen - 1;
-	  send(sock, chatBuffer, chatLen, 0);
-	  //Cleanup
-	  isChatting = 0;
-	  mvwhline(textBox, 0, 0, ' ', COLS-18);
-	  chatLen = 2;
-	  wrefresh(textBox);
-	  break;
+                //Chat
+                case 1:
+                    //Set the size of the message and send it
+                    chatBuffer[0] = chatLen - 1;
+                    send(sock, chatBuffer, chatLen, 0);
+                    //Cleanup
+                    isChatting = 0;
+                    mvwhline(textBox, 0, 0, ' ', COLS-18);
+                    chatLen = 2;
+                    wrefresh(textBox);
+                    break;
 
-	  //Sweep
-	case 2:
-	  buffer[0] = 2;
-	  buffer[1] = 's';
-	  buffer[2] = (y << 4) | (x & 15);
-	  send(sock, buffer, 3, 0);
-	  break;
+                //Sweep
+                case 2:
+                    buffer[0] = 2;
+                    buffer[1] = 's';
+                    buffer[2] = (y << 4) | (x & 15);
+                    send(sock, buffer, 3, 0);
+                    break;
 
-	}
-
+            }
+#ifndef WIN32
+        }
+#endif
 
         //Receive data
         //Read the keyboard first
