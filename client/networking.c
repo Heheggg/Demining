@@ -1,6 +1,6 @@
+
 #include <stdlib.h>
 #include <curses.h>
-
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -125,7 +125,8 @@ int exchangeBasics(int sock, unsigned char *players,
 }
 
 int game(WINDOW *left, WINDOW *bottom, WINDOW *textBox, WINDOW *middle,
-    int sock, unsigned char id, unsigned char players, unsigned char mines, struct data *pData,
+    int sock, unsigned char id, unsigned char players,
+     unsigned char mines, struct data *pData,
     unsigned char field[16][16]){
     
     unsigned char i, toReceive, toDiscard, chatLen, y, x;
@@ -148,17 +149,29 @@ int game(WINDOW *left, WINDOW *bottom, WINDOW *textBox, WINDOW *middle,
     y = 7;
     x = 7;
 
+    //Windows' timeval
+#ifdef WIN32
+    struct timeval timeVal;
+    timeVal.tv_sec = 0;
+    timeVal.tv_usec = 250;
+#endif
 
     //Main loop
     while(mines){
         //Build the set
         FD_ZERO(&set);
+#ifndef WIN32
+        FD_SET(fileno(stdin), &set);
+#endif
         FD_SET(sock, &set);
 
         //Wait for something to happen
-
+#ifdef WIN32
+        if(select(FD_SETSIZE, &set, NULL, NULL, &timeVal) < 0){
+#else
         if(select(FD_SETSIZE, &set, NULL, NULL, NULL) < 0){
-	  return 1;
+#endif
+            return 1;
         }
 
         //Read the keyboard first
@@ -167,7 +180,7 @@ int game(WINDOW *left, WINDOW *bottom, WINDOW *textBox, WINDOW *middle,
 #endif
             //Send the message if the handler says it's OK
             switch(keyboardHandler(middle, textBox, &chatLen, &isChatting,
-                 &y, &x, id, turn, field, chatBuffer)){
+                &y, &x, id, turn, field, chatBuffer)){
 
                 //Chat
                 case 1:

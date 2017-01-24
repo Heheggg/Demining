@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
@@ -94,7 +95,7 @@ int main(int argc, char *argv[]){
     }
 
     //Send name and retrieve basic info from the server
-    p = exchangeBasics(sock, &players, &mines, &id,
+    p = exchangeBasics(sock, &players,&mines, &id,
         argv[1], &pData);
 
     //Lost connection
@@ -145,8 +146,12 @@ int main(int argc, char *argv[]){
              mines, pData, field);
 
     shutdown(sock, 2);
-
+#ifdef WIN32
+    closesocket(sock);
+#else
     close(sock);
+#endif
+
     if(!p){
         showWinner(bottom, players, pData);
     }
