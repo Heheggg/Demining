@@ -16,16 +16,15 @@ How It Will Be Used:
 -The game server will automatically pair any clients trying to connect to a game
 -The game will use the standard rules of the single-player Minesweeper video-game
 -Both players will share the same minesweeper board
--The two players will each go turn by turn, each player have to demine a block after each other with a time limit. Whoever first trigger a mine will loose the game. 
+-The two players will each go turn by turn, each player have to demine a block after each other with a time limit. Whoever first trigger the most mines will loose the game. 
 -Both players are allowed to independently mark their own boards with flags at any time
--Optional Features: In-game chat, diffculty selection, single-player variant
+-Optional Features: In-game chat, single-player variant
 
 
 Technical Design:
 *Memory allocation for the game
 *Networking between the server + client computers to play the game
-*File reading/writing and shared memory to keep track of individual boards and past game records
-*Semaphores and shared memory to share the gameboard.
+*Semaphores and shared memory to manage the gameboard.
 *Signals to determine game states
 *Inputs parsing to determine player commands
 
