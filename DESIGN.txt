@@ -12,7 +12,7 @@ We will be implementing an multi-player version of the Minesweeper game
 
 
 How It Will Be Used:
--The game server will a two-player games to exist (was unable to get forking working)
+-The game server will a two-player games to exist (was unable to get forking to work)
 -The game server will automatically pair any clients trying to connect to a game
 -The game will use the standard rules of the single-player Minesweeper video-game
 -Both players will share the same minesweeper board
