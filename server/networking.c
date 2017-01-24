@@ -9,8 +9,6 @@
 #include "networking.h"
 
 int server_setup(int *server_Sock, unsigned short port, struct sockaddr_in *server_Addr){
-  unsigned char i;
-  int players = 2;
 
   //create socket
   *server_Sock = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
@@ -313,11 +311,7 @@ int play(int *client_Sock, struct data *playerData, unsigned char field[16][16])
 	printf("%s left.\n", playerData[i].name);
 	//Close the socket
 	shutdown(client_Sock[i], 2);
-#ifdef WIN32
-	closesocket(client_Sock[i]);
-#else
 	close(client_Sock[i]);
-#endif
 	//Tell the rest of the players
 	buffer[0] = 2;
 	buffer[1] = 'l';
@@ -334,9 +328,6 @@ int play(int *client_Sock, struct data *playerData, unsigned char field[16][16])
 
       //Parse
       if(playerData[i].buffer[0] == 't'){
-	//Player's chatting, retransmit
-	//Make tBlabla into ltiblabla\0
-	//Where i = player id and l is the length
 	for(n = 1; n < playerData[i].len; n++){
 	  buffer[n + 2] = playerData[i].buffer[n];
 	}
@@ -376,7 +367,7 @@ int play(int *client_Sock, struct data *playerData, unsigned char field[16][16])
 	    for(t = 0; t < players; t++){
 	      n = 0;
 	      for(e = 0; e < players; e++){
-		if(playerData[e].score + mines >= playerData[t].score){
+		if(playerData[e].score + mines <= playerData[t].score){
 		  n++;
 		}
 	      }
