@@ -56,57 +56,94 @@ int main(int argc, char *argv[]) {
   //seed
   srand(time(NULL));
 
+  if(!(client_Addr = (struct sockaddr_in *) malloc(players * sizeof(struct sockaddr_in))) ||
+     !(playerData = (struct data *) malloc(players * sizeof(struct data))) ||
+     !(client_Sock = (int *) malloc(players * sizeof(int)))){
+
+    fprintf(stderr, "Not enough memory. \n");
+    exit(5);
+  }
+
   unsigned char field[16][16];
-  
-  while(1){
-    if(!(client_Addr = (struct sockaddr_in *) malloc(players * sizeof(struct sockaddr_in))) ||
-       !(playerData = (struct data *) malloc(players * sizeof(struct data))) ||
-       !(client_Sock = (int *) malloc(players * sizeof(int)))){
 
-      fprintf(stderr, "Not enough memory. \n");
-      exit(5);
+  initialize(playerData, field);
+    
+  if(server_connect(&server_Sock, client_Sock, client_Addr, playerData)){
+    fprintf(stderr, "Select failed.\n");
+  }
+
+  if(!play(client_Sock, playerData, field)){
+    //Skip this part if the game ended because a player left
+    i = 0;
+    for(n = 1; n < players; n++){
+      if(playerData[n].score > playerData[i].score){
+	i = n;
+      }
     }
+    printf("%s won.\n", playerData[i].name);
+  }
 
-    initialize(playerData,field);
+  //Free the memory and sockets
+  for(i = 0; i < players; i++){
+    shutdown(client_Sock[i], 2);
+    close(client_Sock[i]);
+  }
+  shutdown(server_Sock,2);
+  close(server_Sock);
+  free(client_Addr);
+  free(playerData);
+  free(client_Sock);
+
+  
+  /* while(1){ */
+  /*   if(!(client_Addr = (struct sockaddr_in *) malloc(players * sizeof(struct sockaddr_in))) || */
+  /*      !(playerData = (struct data *) malloc(players * sizeof(struct data))) || */
+  /*      !(client_Sock = (int *) malloc(players * sizeof(int)))){ */
+
+  /*     fprintf(stderr, "Not enough memory. \n"); */
+  /*     exit(5); */
+  /*   } */
+
+  /*   initialize(playerData,field); */
 
     
-    if(server_connect(&server_Sock, client_Sock, client_Addr, playerData)){
-      fprintf(stderr, "Select failed.\n");
-    }
-    printf("new fork test\n");
-    int pid = fork();
-    if (pid < 0){
-      fprintf(stderr,"ERROR on Fork \n");
-    }
+  /*   if(server_connect(&server_Sock, client_Sock, client_Addr, playerData)){ */
+  /*     fprintf(stderr, "Select failed.\n"); */
+  /*   } */
+  /*   printf("new fork test\n"); */
+  /*   int pid = fork(); */
+  /*   if (pid < 0){ */
+  /*     fprintf(stderr,"ERROR on Fork \n"); */
+  /*   } */
 
-    if(pid == 0){
-      close(server_Sock);
+  /*   if(pid == 0){ */
+  /*     close(server_Sock); */
 
-      if(!play(client_Sock, playerData, field)){
-        i = 0;
-        for(n = 1; n < players; n++){
-	  if(playerData[n].score > playerData[i].score){
-	    i = n;
-	  }
-        }
-        printf("%s won.\n", playerData[i].name);
-      }
+  /*     if(!play(client_Sock, playerData, field)){ */
+  /*       i = 0; */
+  /*       for(n = 1; n < players; n++){ */
+  /* 	  if(playerData[n].score > playerData[i].score){ */
+  /* 	    i = n; */
+  /* 	  } */
+  /*       } */
+  /*       printf("%s won.\n", playerData[i].name); */
+  /*     } */
       
-      free(client_Addr);
-      free(playerData);
-      free(client_Sock);
+  /*     free(client_Addr); */
+  /*     free(playerData); */
+  /*     free(client_Sock); */
 
-      printf("exiting \n");
-      exit(0);
-    }else{
-      for(i = 0; i < players; i++){
-	close(client_Sock[i]);
-      }
-    }
+  /*     printf("exiting \n"); */
+  /*     exit(0); */
+  /*   }else{ */
+  /*     for(i = 0; i < players; i++){ */
+  /* 	close(client_Sock[i]); */
+  /*     } */
+  /*   } */
     
     
     return 0;
   
-  }
+  
 }
 

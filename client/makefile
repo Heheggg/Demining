@@ -5,8 +5,7 @@ CFLAGS=-O2 -Wall
 all: demining
 
 clean:
-	rm -f networking.o game.o client.o screen.o \
-        demining
+	rm -f networking.o game.o client.o screen.o demining \
 
 demining: networking.o client.o screen.o
 	$(CC) $(CFLAGS)   -o demining client.o networking.o \
